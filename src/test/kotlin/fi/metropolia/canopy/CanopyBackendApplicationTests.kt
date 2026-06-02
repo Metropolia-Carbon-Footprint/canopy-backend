@@ -1,13 +1,9 @@
 package fi.metropolia.canopy
 
+import fi.metropolia.canopy.support.AbstractIntegrationTest
 import org.junit.jupiter.api.Test
-import org.springframework.boot.test.context.SpringBootTest
 
-@SpringBootTest
-class CanopyBackendApplicationTests {
-
+class CanopyBackendApplicationTests : AbstractIntegrationTest() {
     @Test
-    fun contextLoads() {
-    }
-
+    fun contextLoads() = Unit
 }
