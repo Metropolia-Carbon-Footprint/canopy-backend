@@ -13,6 +13,7 @@ import fi.metropolia.canopy.exception.ConflictException
 import fi.metropolia.canopy.exception.ResourceNotFoundException
 import fi.metropolia.canopy.repository.LocalCredentialRepository
 import fi.metropolia.canopy.repository.UserRepository
+import fi.metropolia.canopy.security.RequireAdmin
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -25,14 +26,17 @@ class UserService(
     private val localCredentialRepository: LocalCredentialRepository,
     private val passwordEncoder: PasswordEncoder,
 ) {
+    @RequireAdmin
     fun getAllUsers() =
         userRepository.findAllByDeletedAtIsNullOrderByEmailAsc()
             .map(User::toResponse)
 
+    @RequireAdmin
     fun getUserById(userId: Int) =
         findActiveUser(userId).toResponse()
 
     @Transactional
+    @RequireAdmin
     fun createUser(request: CreateUserRequest) =
         createLocalUser(
             email = request.email,
@@ -41,6 +45,7 @@ class UserService(
         ).toResponse()
 
     @Transactional
+    @RequireAdmin
     fun updateUser(userId: Int, request: UpdateUserRequest) =
         findActiveUser(userId)
             .also { user ->
@@ -54,6 +59,7 @@ class UserService(
             .toResponse()
 
     @Transactional
+    @RequireAdmin
     fun deleteUser(userId: Int) {
         val user = findActiveUser(userId)
         user.deletedAt = LocalDateTime.now()

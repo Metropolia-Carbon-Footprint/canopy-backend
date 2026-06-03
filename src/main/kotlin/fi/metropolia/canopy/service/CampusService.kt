@@ -10,6 +10,7 @@ import fi.metropolia.canopy.entity.Campus
 import fi.metropolia.canopy.exception.InvalidRequestException
 import fi.metropolia.canopy.exception.ResourceNotFoundException
 import fi.metropolia.canopy.repository.CampusRepository
+import fi.metropolia.canopy.security.RequireAdmin
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -28,6 +29,7 @@ class CampusService(
         findActiveCampus(campusId).toResponse()
 
     @Transactional
+    @RequireAdmin
     fun createCampus(request: CreateCampusRequest): CampusResponse {
         validateCoordinatePair(request.latitude, request.longitude)
 
@@ -35,6 +37,7 @@ class CampusService(
     }
 
     @Transactional
+    @RequireAdmin
     fun updateCampus(campusId: Int, request: UpdateCampusRequest): CampusResponse {
         validateCoordinatePair(request.latitude, request.longitude)
 
@@ -45,6 +48,7 @@ class CampusService(
     }
 
     @Transactional
+    @RequireAdmin
     fun deleteCampus(campusId: Int) {
         val campus = findActiveCampus(campusId)
         campus.deletedAt = LocalDateTime.now()

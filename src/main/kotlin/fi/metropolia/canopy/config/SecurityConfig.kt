@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -34,6 +35,7 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 
 @Configuration
+@EnableMethodSecurity
 @EnableConfigurationProperties(SecurityProperties::class)
 class SecurityConfig(
     private val objectMapper: ObjectMapper,
@@ -60,12 +62,8 @@ class SecurityConfig(
                         "/v3/api-docs/**",
                     ).permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/campuses/**").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/campuses/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/api/campuses/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/api/campuses/**").hasRole("ADMIN")
-                    .requestMatchers("/api/users/**").hasRole("ADMIN")
                     .requestMatchers("/api/**").authenticated()
-                    .anyRequest().permitAll()
+                    .anyRequest().denyAll()
             }
             .oauth2ResourceServer { resourceServer ->
                 resourceServer.jwt { jwt ->
