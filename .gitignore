@@ -40,5 +40,4 @@ out/
 .kotlin
 
 ### Local Environment ###
-docker-compose.yml
 .env
