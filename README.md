@@ -44,6 +44,42 @@ After the backend has started, open:
 http://localhost:8080/swagger-ui.html
 ```
 
+## Create a local admin user
+
+Newly registered users have the `USER` role by default. To create an admin account for local development:
+
+1. Start PostgreSQL and the backend.
+2. Register a new user through Swagger UI.
+3. Open a PostgreSQL shell inside the Docker container:
+
+```bash
+docker exec -it canopy-postgres psql -U user -d canopy-db
+```
+
+4. Replace the example email address and promote the registered user:
+
+```sql
+UPDATE users
+SET role = 'ADMIN'
+WHERE email = 'admin@example.com';
+```
+
+5. Confirm the updated role:
+
+```sql
+SELECT user_id, email, role
+FROM users
+WHERE email = 'admin@example.com';
+```
+
+6. Exit the PostgreSQL shell:
+
+```sql
+\q
+```
+
+Log in again through Swagger UI to receive a new access token containing the `ADMIN` role.
+
 ## Run tests
 
 macOS and Linux:
