@@ -5,7 +5,7 @@ Kotlin Spring Boot backend for the Canopy carbon-footprint tracking application.
 ## Requirements
 
 - Docker with Docker Compose e.g. Docker Desktop
-- Java 21 SDK
+- Java 17 SDK
 - IntelliJ IDEA or another Kotlin-compatible IDE
 
 ## Local setup
