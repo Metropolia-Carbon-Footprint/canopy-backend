@@ -30,6 +30,26 @@ class GlobalExceptionHandler {
         path = request.requestURI
     )
 
+    @ExceptionHandler(ConflictException::class)
+    fun handleConflict(
+        exception: ConflictException,
+        request: HttpServletRequest
+    ): ResponseEntity<ApiErrorResponse> = buildResponse(
+        status = HttpStatus.CONFLICT,
+        message = exception.message ?: "Request conflicts with an existing resource",
+        path = request.requestURI
+    )
+
+    @ExceptionHandler(UnauthorizedException::class)
+    fun handleUnauthorized(
+        exception: UnauthorizedException,
+        request: HttpServletRequest
+    ): ResponseEntity<ApiErrorResponse> = buildResponse(
+        status = HttpStatus.UNAUTHORIZED,
+        message = exception.message ?: "Unauthorized",
+        path = request.requestURI
+    )
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(
         exception: MethodArgumentNotValidException,

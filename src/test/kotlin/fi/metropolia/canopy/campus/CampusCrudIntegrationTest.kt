@@ -1,6 +1,8 @@
 package fi.metropolia.canopy.campus
 
 import fi.metropolia.canopy.support.AbstractIntegrationTest
+import fi.metropolia.canopy.support.TestAuthTokens
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
@@ -12,12 +14,22 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 class CampusCrudIntegrationTest : AbstractIntegrationTest() {
+    private lateinit var adminTokens: TestAuthTokens
+
+    @BeforeEach
+    fun createAdmin() {
+        val email = "admin@example.com"
+        registerUser(email)
+        promoteToAdmin(email)
+        adminTokens = loginUser(email)
+    }
+
     @Test
     fun `create retrieve update delete and hide campus`() {
         val campusId = createCampus(
             """
             {
-              "name": "Myyrmäki Campus",
+              "name": "Myyrmaki Campus",
               "city": "Vantaa",
               "latitude": 60.2589,
               "longitude": 24.8442
@@ -28,16 +40,17 @@ class CampusCrudIntegrationTest : AbstractIntegrationTest() {
         mockMvc.perform(get("/api/campuses/{campusId}", campusId))
             .andExpect(status().isOk)
             .andExpect(jsonPath("\$.campusId").value(campusId))
-            .andExpect(jsonPath("\$.name").value("Myyrmäki Campus"))
+            .andExpect(jsonPath("\$.name").value("Myyrmaki Campus"))
             .andExpect(jsonPath("\$.city").value("Vantaa"))
 
         mockMvc.perform(
             put("/api/campuses/{campusId}", campusId)
+                .header("Authorization", bearer(adminTokens.accessToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {
-                      "name": "Myyrmäki Updated",
+                      "name": "Myyrmaki Updated",
                       "city": "Vantaa",
                       "latitude": 60.2589,
                       "longitude": 24.8442
@@ -47,9 +60,12 @@ class CampusCrudIntegrationTest : AbstractIntegrationTest() {
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("\$.campusId").value(campusId))
-            .andExpect(jsonPath("\$.name").value("Myyrmäki Updated"))
+            .andExpect(jsonPath("\$.name").value("Myyrmaki Updated"))
 
-        mockMvc.perform(delete("/api/campuses/{campusId}", campusId))
+        mockMvc.perform(
+            delete("/api/campuses/{campusId}", campusId)
+                .header("Authorization", bearer(adminTokens.accessToken)),
+        )
             .andExpect(status().isNoContent)
 
         mockMvc.perform(get("/api/campuses/{campusId}", campusId))
@@ -66,7 +82,10 @@ class CampusCrudIntegrationTest : AbstractIntegrationTest() {
         val deletedCampusId = createCampus("""{ "name": "Beta Campus" }""")
         createCampus("""{ "name": "Alpha Campus" }""")
 
-        mockMvc.perform(delete("/api/campuses/{campusId}", deletedCampusId))
+        mockMvc.perform(
+            delete("/api/campuses/{campusId}", deletedCampusId)
+                .header("Authorization", bearer(adminTokens.accessToken)),
+        )
             .andExpect(status().isNoContent)
 
         mockMvc.perform(get("/api/campuses"))
@@ -80,6 +99,7 @@ class CampusCrudIntegrationTest : AbstractIntegrationTest() {
     fun `invalid campus requests return bad request`() {
         mockMvc.perform(
             post("/api/campuses")
+                .header("Authorization", bearer(adminTokens.accessToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{ "name": "   " }"""),
         )
@@ -89,6 +109,7 @@ class CampusCrudIntegrationTest : AbstractIntegrationTest() {
 
         mockMvc.perform(
             post("/api/campuses")
+                .header("Authorization", bearer(adminTokens.accessToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{ "name": "Karamalmi", "latitude": 60.22 }"""),
         )
@@ -101,6 +122,7 @@ class CampusCrudIntegrationTest : AbstractIntegrationTest() {
 
         mockMvc.perform(
             post("/api/campuses")
+                .header("Authorization", bearer(adminTokens.accessToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -128,6 +150,7 @@ class CampusCrudIntegrationTest : AbstractIntegrationTest() {
     private fun createCampus(requestBody: String): Int {
         val result = mockMvc.perform(
             post("/api/campuses")
+                .header("Authorization", bearer(adminTokens.accessToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody),
         )
