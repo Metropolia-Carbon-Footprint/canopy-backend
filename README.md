@@ -5,7 +5,7 @@ Kotlin Spring Boot backend for the Canopy carbon-footprint tracking application.
 ## Requirements
 
 - Docker with Docker Compose e.g. Docker Desktop
-- A Java SDK compatible with the project Gradle configuration
+- Java 21 SDK
 - IntelliJ IDEA or another Kotlin-compatible IDE
 
 ## Local setup
@@ -53,8 +53,9 @@ Newly registered users have the `USER` role by default. To create an admin accou
 3. Open a PostgreSQL shell inside the Docker container:
 
 ```bash
-docker exec -it canopy-postgres psql -U user -d canopy-db
+docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 ```
+> Note: Run this command from the project root so Docker Compose can load the `.env` file.
 
 4. Replace the example email address and promote the registered user:
 
