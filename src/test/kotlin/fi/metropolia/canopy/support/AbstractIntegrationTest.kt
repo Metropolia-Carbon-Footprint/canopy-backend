@@ -1,5 +1,7 @@
 package fi.metropolia.canopy.support
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.jayway.jsonpath.JsonPath
 import fi.metropolia.canopy.dto.user.normalizedEmail
 import fi.metropolia.canopy.entity.UserRole
@@ -8,7 +10,9 @@ import fi.metropolia.canopy.service.InMemoryRefreshTokenService
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.jdbc.core.JdbcTemplate
@@ -18,10 +22,22 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestcontainersConfiguration::class)
+@Import(TestcontainersConfiguration::class, AbstractIntegrationTest.JacksonTestConfig::class)
 abstract class AbstractIntegrationTest {
+
+    @TestConfiguration
+    class JacksonTestConfig {
+        @Bean
+        fun objectMapper(): ObjectMapper {
+            return ObjectMapper().registerModule(JavaTimeModule())
+        }
+    }
+
     @Autowired
     protected lateinit var mockMvc: MockMvc
+
+    @Autowired
+    protected lateinit var objectMapper: ObjectMapper
 
     @Autowired
     private lateinit var jdbc: JdbcTemplate

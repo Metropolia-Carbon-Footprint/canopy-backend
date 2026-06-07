@@ -7,4 +7,6 @@ interface CampusRepository : JpaRepository<Campus, Int> {
     fun findAllByDeletedAtIsNullOrderByNameAsc(): List<Campus>
 
     fun findByCampusIdAndDeletedAtIsNull(campusId: Int): Campus?
+
+    fun findByNameAndDeletedAtIsNull(name: String): Campus?
 }
