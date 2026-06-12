@@ -1,5 +1,6 @@
 package fi.metropolia.canopy.service
 
+import fi.metropolia.canopy.dto.trip.PatchTripRequest
 import fi.metropolia.canopy.dto.trip.TripSubmissionDto
 import fi.metropolia.canopy.dto.trip.TripResponseDto
 import fi.metropolia.canopy.entity.*
@@ -97,6 +98,37 @@ class TripService(
                 segmentOrder = segmentDto.segmentOrder
             )
         })
+
+        return tripRepository.save(trip)
+    }
+
+    @Transactional
+    fun patchTrip(tripId: Int, dto: PatchTripRequest): Trip {
+        val user = getCurrentUser()
+        val trip = tripRepository.findByTripIdAndUserAndDeletedAtIsNull(tripId, user)
+            ?: throw NotFoundException("Trip not found with id: $tripId")
+
+        dto.destinationCampusName?.let {
+            trip.campus = campusRepository.findByNameAndDeletedAtIsNull(it)
+        }
+        dto.startTime?.let { trip.startTime = it }
+        dto.endTime?.let { trip.endTime = it }
+
+        dto.segments?.let { newSegments ->
+            // Append new segments to the existing list
+            trip.segments.addAll(newSegments.map { segmentDto ->
+                TripSegment(
+                    trip = trip,
+                    transportMode = segmentDto.transportMode,
+                    distanceMeters = segmentDto.distanceMeters,
+                    carbonGrams = segmentDto.carbonGrams,
+                    segmentOrder = segmentDto.segmentOrder
+                )
+            })
+            // Recalculate totals based on the full, updated list of segments
+            trip.totalDistanceMeters = trip.segments.fold(BigDecimal.ZERO) { acc, segment -> acc + segment.distanceMeters }
+            trip.totalCarbonGrams = trip.segments.fold(BigDecimal.ZERO) { acc, segment -> acc + segment.carbonGrams }
+        }
 
         return tripRepository.save(trip)
     }

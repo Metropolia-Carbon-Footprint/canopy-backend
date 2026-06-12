@@ -1,5 +1,6 @@
 package fi.metropolia.canopy.controller
 
+import fi.metropolia.canopy.dto.trip.PatchTripRequest
 import fi.metropolia.canopy.dto.trip.TripResponseDto
 import fi.metropolia.canopy.dto.trip.TripSubmissionDto
 import fi.metropolia.canopy.mapper.toResponseDto
@@ -55,6 +56,12 @@ class TripController(
     fun updateTrip(@PathVariable tripId: Int, @Valid @RequestBody tripDto: TripSubmissionDto): ResponseEntity<TripResponseDto> {
         val updatedTrip = tripService.updateTrip(tripId, tripDto)
         return ResponseEntity.ok(updatedTrip.toResponseDto())
+    }
+
+    @PatchMapping("/{tripId}")
+    fun patchTrip(@PathVariable tripId: Int, @RequestBody tripDto: PatchTripRequest): ResponseEntity<TripResponseDto> {
+        val patchedTrip = tripService.patchTrip(tripId, tripDto)
+        return ResponseEntity.ok(patchedTrip.toResponseDto())
     }
 
     @Operation(
