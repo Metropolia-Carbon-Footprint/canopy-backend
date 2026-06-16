@@ -4,7 +4,7 @@ import fi.metropolia.canopy.dto.trip.PatchTripRequest
 import fi.metropolia.canopy.dto.trip.TripSubmissionDto
 import fi.metropolia.canopy.dto.trip.TripResponseDto
 import fi.metropolia.canopy.entity.*
-import fi.metropolia.canopy.exception.NotFoundException
+import fi.metropolia.canopy.exception.ResourceNotFoundException
 import fi.metropolia.canopy.mapper.toResponseDto
 import fi.metropolia.canopy.repository.CampusRepository
 import fi.metropolia.canopy.repository.TripRepository
@@ -38,7 +38,7 @@ class TripService(
 
         return tripRepository.findByTripIdAndUserAndDeletedAtIsNull(tripId, user)
             ?.toResponseDto()
-            ?: throw NotFoundException("Trip not found with id: $tripId")
+            ?: throw ResourceNotFoundException("Trip", tripId)
     }
 
     @Transactional
@@ -76,7 +76,7 @@ class TripService(
     fun updateTrip(tripId: Int, dto: TripSubmissionDto): Trip {
         val user = getCurrentUser()
         val trip = tripRepository.findByTripIdAndUserAndDeletedAtIsNull(tripId, user)
-            ?: throw NotFoundException("Trip not found with id: $tripId")
+            ?: throw ResourceNotFoundException("Trip", tripId)
 
         val campus: Campus? = dto.destinationCampusName?.let {
             campusRepository.findByNameAndDeletedAtIsNull(it)
@@ -106,7 +106,7 @@ class TripService(
     fun patchTrip(tripId: Int, dto: PatchTripRequest): Trip {
         val user = getCurrentUser()
         val trip = tripRepository.findByTripIdAndUserAndDeletedAtIsNull(tripId, user)
-            ?: throw NotFoundException("Trip not found with id: $tripId")
+            ?: throw ResourceNotFoundException("Trip", tripId)
 
         dto.destinationCampusName?.let {
             trip.campus = campusRepository.findByNameAndDeletedAtIsNull(it)
@@ -137,7 +137,7 @@ class TripService(
     fun deleteTrip(tripId: Int) {
         val user = getCurrentUser()
         val trip = tripRepository.findByTripIdAndUserAndDeletedAtIsNull(tripId, user)
-            ?: throw NotFoundException("Trip not found with id: $tripId")
+            ?: throw ResourceNotFoundException("Trip", tripId)
 
         trip.deletedAt = LocalDateTime.now()
         tripRepository.save(trip)
