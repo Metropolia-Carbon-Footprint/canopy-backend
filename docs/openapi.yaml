@@ -1,25 +1,25 @@
 openapi: 3.1.0
 info:
-  title: OpenAPI definition
-  version: v0
+  title: Canopy OpenAPI definition
+  version: v1.0
 servers:
-- url: http://localhost:8080
-  description: Generated server url
+  - url: http://localhost:8080
+    description: Default localhost server url
 security:
-- bearerAuth: []
+  - bearerAuth: []
 paths:
   /api/users/{userId}:
     get:
       tags:
-      - user-controller
+        - user-controller
       operationId: getUserById
       parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
       responses:
         "200":
           description: OK
@@ -29,15 +29,15 @@ paths:
                 $ref: "#/components/schemas/UserResponse"
     put:
       tags:
-      - user-controller
+        - user-controller
       operationId: updateUser
       parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
       requestBody:
         content:
           application/json:
@@ -53,30 +53,114 @@ paths:
                 $ref: "#/components/schemas/UserResponse"
     delete:
       tags:
-      - user-controller
+        - user-controller
       operationId: deleteUser
       parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
       responses:
         "204":
           description: No Content
+  /api/trips/{tripId}:
+    get:
+      tags:
+        - trip-controller
+      operationId: getTripById
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TripResponseDto"
+    put:
+      tags:
+        - trip-controller
+      operationId: updateTrip
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripSubmissionDto"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TripResponseDto"
+    delete:
+      tags:
+        - trip-controller
+      summary: Delete a trip
+      operationId: deleteTrip
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "204":
+          description: Trip deleted successfully
+        "404":
+          description: Trip not found
+    patch:
+      tags:
+        - trip-controller
+      operationId: patchTrip
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchTripRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TripResponseDto"
   /api/campuses/{campusId}:
     get:
       tags:
-      - campus-controller
+        - campus-controller
       operationId: getCampusById
       parameters:
-      - name: campusId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - name: campusId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
       responses:
         "200":
           description: OK
@@ -86,15 +170,15 @@ paths:
                 $ref: "#/components/schemas/CampusResponse"
     put:
       tags:
-      - campus-controller
+        - campus-controller
       operationId: updateCampus
       parameters:
-      - name: campusId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - name: campusId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
       requestBody:
         content:
           application/json:
@@ -110,22 +194,22 @@ paths:
                 $ref: "#/components/schemas/CampusResponse"
     delete:
       tags:
-      - campus-controller
+        - campus-controller
       operationId: deleteCampus
       parameters:
-      - name: campusId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - name: campusId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
       responses:
         "204":
           description: No Content
   /api/users:
     get:
       tags:
-      - user-controller
+        - user-controller
       operationId: getAllUsers
       responses:
         "200":
@@ -138,7 +222,7 @@ paths:
                   $ref: "#/components/schemas/UserResponse"
     post:
       tags:
-      - user-controller
+        - user-controller
       operationId: createUser
       requestBody:
         content:
@@ -153,10 +237,68 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/UserResponse"
+  /api/trips:
+    get:
+      tags:
+        - trip-controller
+      operationId: getTrips
+      parameters:
+        - name: page
+          in: query
+          description: Zero-based page index (0..N)
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: size
+          in: query
+          description: The size of the page to be returned
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+        - name: sort
+          in: query
+          description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+          required: false
+          schema:
+            type: array
+            default:
+              - "startTime,ASC"
+            items:
+              type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageTripResponseDto"
+    post:
+      tags:
+        - trip-controller
+      summary: Submit a new trip
+      operationId: submitTrip
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripSubmissionDto"
+        required: true
+      responses:
+        "201":
+          description: Trip created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripResponseDto"
   /api/campuses:
     get:
       tags:
-      - campus-controller
+        - campus-controller
       operationId: getAllCampuses
       responses:
         "200":
@@ -169,7 +311,7 @@ paths:
                   $ref: "#/components/schemas/CampusResponse"
     post:
       tags:
-      - campus-controller
+        - campus-controller
       operationId: createCampus
       requestBody:
         content:
@@ -187,7 +329,7 @@ paths:
   /api/auth/register:
     post:
       tags:
-      - auth-controller
+        - auth-controller
       operationId: register
       requestBody:
         content:
@@ -205,7 +347,7 @@ paths:
   /api/auth/refresh:
     post:
       tags:
-      - auth-controller
+        - auth-controller
       operationId: refresh
       requestBody:
         content:
@@ -223,7 +365,7 @@ paths:
   /api/auth/logout:
     post:
       tags:
-      - auth-controller
+        - auth-controller
       operationId: logout
       requestBody:
         content:
@@ -237,7 +379,7 @@ paths:
   /api/auth/login:
     post:
       tags:
-      - auth-controller
+        - auth-controller
       operationId: login
       requestBody:
         content:
@@ -255,7 +397,7 @@ paths:
   /api/auth/me:
     get:
       tags:
-      - auth-controller
+        - auth-controller
       operationId: me
       responses:
         "200":
@@ -277,10 +419,10 @@ components:
         role:
           type: string
           enum:
-          - USER
-          - ADMIN
+            - USER
+            - ADMIN
       required:
-      - email
+        - email
     UserResponse:
       type: object
       properties:
@@ -292,18 +434,122 @@ components:
         role:
           type: string
           enum:
-          - USER
-          - ADMIN
+            - USER
+            - ADMIN
         createdAt:
           type:
-          - string
-          - "null"
+            - string
+            - "null"
           format: date-time
         updatedAt:
           type:
-          - string
-          - "null"
+            - string
+            - "null"
           format: date-time
+    TripSegmentDto:
+      type: object
+      properties:
+        transportMode:
+          type: string
+          enum:
+            - WALKING
+            - CYCLING
+            - E_SCOOTER
+            - BUS
+            - TRAM
+            - METRO
+            - TRAIN
+            - CAR
+            - MOPED
+        distanceMeters:
+          type: number
+        carbonGrams:
+          type: number
+        segmentOrder:
+          type: integer
+          format: int32
+      required:
+        - carbonGrams
+        - distanceMeters
+        - transportMode
+    TripSubmissionDto:
+      type: object
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type:
+            - string
+            - "null"
+          format: date-time
+        destinationCampusName:
+          type:
+            - string
+            - "null"
+        segments:
+          type: array
+          items:
+            $ref: "#/components/schemas/TripSegmentDto"
+          minItems: 1
+      required:
+        - segments
+        - startTime
+    TripResponseDto:
+      type: object
+      properties:
+        tripId:
+          type: integer
+          format: int32
+        campusName:
+          type:
+            - string
+            - "null"
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type:
+            - string
+            - "null"
+          format: date-time
+        totalDistanceMeters:
+          type: number
+        totalCarbonGrams:
+          type: number
+        source:
+          type:
+            - string
+            - "null"
+        segments:
+          type: array
+          items:
+            $ref: "#/components/schemas/TripSegmentResponseDto"
+    TripSegmentResponseDto:
+      type: object
+      properties:
+        tripSegmentId:
+          type: integer
+          format: int32
+        transportMode:
+          type: string
+          enum:
+            - WALKING
+            - CYCLING
+            - E_SCOOTER
+            - BUS
+            - TRAM
+            - METRO
+            - TRAIN
+            - CAR
+            - MOPED
+        distanceMeters:
+          type: number
+        carbonGrams:
+          type: number
+        segmentOrder:
+          type: integer
+          format: int32
     UpdateCampusRequest:
       type: object
       properties:
@@ -313,24 +559,24 @@ components:
           minLength: 0
         city:
           type:
-          - string
-          - "null"
+            - string
+            - "null"
           maxLength: 100
           minLength: 0
         latitude:
           type:
-          - number
-          - "null"
+            - number
+            - "null"
           maximum: 90.0
           minimum: -90.0
         longitude:
           type:
-          - number
-          - "null"
+            - number
+            - "null"
           maximum: 180.0
           minimum: -180.0
       required:
-      - name
+        - name
     CampusResponse:
       type: object
       properties:
@@ -341,25 +587,25 @@ components:
           type: string
         city:
           type:
-          - string
-          - "null"
+            - string
+            - "null"
         latitude:
           type:
-          - number
-          - "null"
+            - number
+            - "null"
         longitude:
           type:
-          - number
-          - "null"
+            - number
+            - "null"
         createdAt:
           type:
-          - string
-          - "null"
+            - string
+            - "null"
           format: date-time
         updatedAt:
           type:
-          - string
-          - "null"
+            - string
+            - "null"
           format: date-time
     CreateUserRequest:
       type: object
@@ -376,11 +622,11 @@ components:
         role:
           type: string
           enum:
-          - USER
-          - ADMIN
+            - USER
+            - ADMIN
       required:
-      - email
-      - password
+        - email
+        - password
     CreateCampusRequest:
       type: object
       properties:
@@ -390,24 +636,24 @@ components:
           minLength: 0
         city:
           type:
-          - string
-          - "null"
+            - string
+            - "null"
           maxLength: 100
           minLength: 0
         latitude:
           type:
-          - number
-          - "null"
+            - number
+            - "null"
           maximum: 90.0
           minimum: -90.0
         longitude:
           type:
-          - number
-          - "null"
+            - number
+            - "null"
           maximum: 180.0
           minimum: -180.0
       required:
-      - name
+        - name
     RegisterRequest:
       type: object
       properties:
@@ -421,8 +667,8 @@ components:
           maxLength: 128
           minLength: 8
       required:
-      - email
-      - password
+        - email
+        - password
     RefreshTokenRequest:
       type: object
       properties:
@@ -430,7 +676,7 @@ components:
           type: string
           minLength: 1
       required:
-      - refreshToken
+        - refreshToken
     AuthTokenResponse:
       type: object
       properties:
@@ -455,8 +701,90 @@ components:
           type: string
           minLength: 1
       required:
-      - email
-      - password
+        - email
+        - password
+    PatchTripRequest:
+      type: object
+      properties:
+        startTime:
+          type:
+            - string
+            - "null"
+          format: date-time
+        endTime:
+          type:
+            - string
+            - "null"
+          format: date-time
+        destinationCampusName:
+          type:
+            - string
+            - "null"
+        segments:
+          type:
+            - array
+            - "null"
+          items:
+            $ref: "#/components/schemas/TripSegmentDto"
+    PageTripResponseDto:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/TripResponseDto"
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        empty:
+          type: boolean
+    PageableObject:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        paged:
+          type: boolean
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        unpaged:
+          type: boolean
+    SortObject:
+      type: object
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
   securitySchemes:
     bearerAuth:
       type: http
