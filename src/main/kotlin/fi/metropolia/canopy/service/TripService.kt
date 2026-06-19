@@ -4,12 +4,15 @@ import fi.metropolia.canopy.dto.trip.PatchTripRequest
 import fi.metropolia.canopy.dto.trip.TripSubmissionDto
 import fi.metropolia.canopy.dto.trip.TripResponseDto
 import fi.metropolia.canopy.entity.*
+import fi.metropolia.canopy.exception.ConflictException
 import fi.metropolia.canopy.exception.ResourceNotFoundException
 import fi.metropolia.canopy.mapper.toResponseDto
 import fi.metropolia.canopy.repository.CampusRepository
 import fi.metropolia.canopy.repository.TripRepository
 import fi.metropolia.canopy.repository.UserRepository
 import fi.metropolia.canopy.security.currentUserId
+import org.hibernate.exception.ConstraintViolationException
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.core.context.SecurityContextHolder
@@ -69,7 +72,14 @@ class TripService(
             )
         }.toMutableList()
 
-        return tripRepository.save(trip)
+        try {
+            return tripRepository.save(trip)
+        } catch (ex: DataIntegrityViolationException) {
+            if (ex.cause is ConstraintViolationException) {
+                throw ConflictException("A trip segment with the same order already exists for this trip.")
+            }
+            throw ex
+        }
     }
 
     @Transactional
@@ -89,6 +99,8 @@ class TripService(
         trip.totalCarbonGrams = dto.segments.fold(BigDecimal.ZERO) { acc, segment -> acc + segment.carbonGrams }
         
         trip.segments.clear()
+        tripRepository.flush() // Force the DELETE statements to be executed now
+
         trip.segments.addAll(dto.segments.map { segmentDto ->
             TripSegment(
                 trip = trip,
@@ -99,7 +111,14 @@ class TripService(
             )
         })
 
-        return tripRepository.save(trip)
+        try {
+            return tripRepository.save(trip)
+        } catch (ex: DataIntegrityViolationException) {
+            if (ex.cause is ConstraintViolationException) {
+                throw ConflictException("A trip segment with the same order already exists for this trip.")
+            }
+            throw ex
+        }
     }
 
     @Transactional
@@ -130,7 +149,14 @@ class TripService(
             trip.totalCarbonGrams = trip.segments.fold(BigDecimal.ZERO) { acc, segment -> acc + segment.carbonGrams }
         }
 
-        return tripRepository.save(trip)
+        try {
+            return tripRepository.save(trip)
+        } catch (ex: DataIntegrityViolationException) {
+            if (ex.cause is ConstraintViolationException) {
+                throw ConflictException("A trip segment with the same order already exists for this trip.")
+            }
+            throw ex
+        }
     }
 
     @Transactional

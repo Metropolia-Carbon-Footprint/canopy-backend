@@ -125,7 +125,7 @@ class TripIntegrationTest : AbstractIntegrationTest() {
         val (tripId, _) = createTripForUser(auth.accessToken, initialTripDto)
 
         // When they send a PATCH request to add a new segment
-        val newSegment = TripSegmentDto(TransportMode.BUS, BigDecimal(1000), BigDecimal(50), 1)
+        val newSegment = TripSegmentDto(TransportMode.BUS, BigDecimal(1000), BigDecimal(50), 1) // Use a new, unique segmentOrder
         val patchDto = PatchTripRequest(segments = listOf(newSegment))
 
         mockMvc.patch("/api/trips/$tripId") {
@@ -158,6 +158,28 @@ class TripIntegrationTest : AbstractIntegrationTest() {
         // Then the trip should be soft-deleted
         val trip = tripRepository.findById(tripId).get()
         assertNotNull(trip.deletedAt)
+    }
+
+    @Test
+    fun `should fail to create a trip with duplicate segment orders`() {
+        // Given an authenticated user
+        val auth = registerAndLogin("test@user.com")
+
+        // When they submit a trip with two segments having the same order
+        val duplicateOrderSegments = listOf(
+            TripSegmentDto(TransportMode.WALKING, BigDecimal(100), BigDecimal(10), 0),
+            TripSegmentDto(TransportMode.BUS, BigDecimal(1000), BigDecimal(50), 0) // Duplicate order
+        )
+        val tripDto = createTripDto(segments = duplicateOrderSegments)
+
+        // Then the request should fail due to the unique constraint
+        mockMvc.post("/api/trips") {
+            header("Authorization", bearer(auth.accessToken))
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(tripDto)
+        }.andExpect {
+            status { isConflict() }
+        }
     }
 
     private fun createTripForUser(accessToken: String, tripDto: TripSubmissionDto): Pair<Int, LocalDateTime> {

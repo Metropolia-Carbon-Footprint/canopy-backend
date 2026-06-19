@@ -6,7 +6,16 @@ import org.hibernate.annotations.UpdateTimestamp
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-@Entity @Table(name = "trip_segments")
+@Entity
+@Table(
+    name = "trip_segments",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "uk_trip_segment_order",
+            columnNames = ["trip_id", "segmentOrder"]
+        )
+    ]
+)
 class TripSegment(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var tripSegmentId: Int = 0,
